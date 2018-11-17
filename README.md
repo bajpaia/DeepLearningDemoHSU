@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/bajpaia/JavaUnitTest.png)](https://travis-ci.org/bajpaia/JavaUnitTest)
+[![Build Status](https://travis-ci.org/bajpaia/DeepLearningDemoHSU.png)](https://travis-ci.org/bajpaia/DeepLearningDemoHSU)
 
 
 
