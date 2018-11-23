@@ -3,6 +3,8 @@ package java.harbour.space.deeplearningdemohsu;
 import android.graphics.*;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity
     private TextView txtClass;
     private ImageView imgDisplay;
     int resultCodeGallery;
+    int resultCodeCam;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -39,7 +42,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                choosePhotoFromGallery();
+                takePhotoFromGallery();
             }
 
         });
@@ -52,12 +55,35 @@ public class MainActivity extends AppCompatActivity
                takePhotofromCam();
             }
         });
+
+        btnDetect.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(null!=imgDisplay.getDrawable())
+                {
+                    activateDetection();
+                }
+                else
+                    {
+                        Toast.makeText(getApplicationContext(),"Please upload an image",Toast.LENGTH_LONG).show();
+
+                }
+
+            }
+        });
     }
 
-    public void choosePhotoFromGallery()
+    public void takePhotoFromGallery()
     {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent,resultCodeGallery);
+        startActivityForResult(galleryIntent,resultCodeGallery=1);
+    }
+    public void takePhotofromCam()
+    {
+        Intent camIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(camIntent,resultCodeCam=2);
     }
 
     public void onActivityResult(int reqCode, int resultCode, Intent data)
@@ -66,25 +92,63 @@ public class MainActivity extends AppCompatActivity
         {
             if(reqCode==resultCodeGallery)
             {
-                Uri imageAdd = data.getData();
-                InputStream inputStream;
-                try
-                {
-                 inputStream = getContentResolver().openInputStream(imageAdd);
-                 Bitmap img = BitmapFactory.decodeStream(inputStream);
-                 imgDisplay.setImageBitmap(img);
-                }
-                catch (FileNotFoundException e)
-                {
-                    e.printStackTrace();
-                    Toast.makeText(this,"We were not able to open the file",Toast.LENGTH_LONG).show();
-                }
+               displayFromGallery(data);
+            }
+            else if (reqCode==resultCodeCam)
+            {
+               displayFromCamera(data);
             }
         }
     }
 
-
-    public void takePhotofromCam()
+    public void displayFromGallery(Intent data)
     {
+        Uri imageAdd = data.getData();
+        InputStream inputStream;
+        if (imageAdd!=null)
+        {
+            try {
+                inputStream = getContentResolver().openInputStream(imageAdd);
+                Bitmap img = BitmapFactory.decodeStream(inputStream);
+                imgDisplay.setImageBitmap(img);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "We were not able to open the file", Toast.LENGTH_LONG).show();
+            }
+        }
     }
+
+    public void displayFromCamera(Intent data)
+    {
+        Bitmap img = (Bitmap)data.getExtras().get("data");
+        imgDisplay.setImageBitmap(img);
+//        ByteArrayOutputStream imgBytes = new ByteArrayOutputStream();
+//        File destination = new File(Environment.getExternalStorageDirectory(),System.currentTimeMillis() +".jpg");
+//        FileOutputStream fileOutStream;
+//        try
+//        {
+//            destination.createNewFile();
+//            fileOutStream = new FileOutputStream(destination);
+//            fileOutStream.write(imgBytes.toByteArray());
+//
+//            fileOutStream.close();
+//        }
+//        catch (FileNotFoundException e)
+//        {
+//            Toast.makeText(this,"The File was not found",Toast.LENGTH_LONG).show();
+//            e.printStackTrace();
+//        }
+//        catch (IOException e)
+//        {
+//            Toast.makeText(this,"There was an IO error",Toast.LENGTH_LONG).show();
+//            e.printStackTrace();
+//        }
+
+    }
+
+    public void activateDetection()
+    {
+
+    }
+
 }
