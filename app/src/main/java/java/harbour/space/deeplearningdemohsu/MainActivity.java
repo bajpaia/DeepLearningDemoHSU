@@ -1,7 +1,9 @@
 package java.harbour.space.deeplearningdemohsu;
-
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import android.graphics.*;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -16,6 +18,10 @@ import android.widget.Toast;
 import java.io.*;
 public class MainActivity extends AppCompatActivity
 {
+    private static final String MODEL_PATH = "mobilenet_quant_v1_224.tflite";
+    private static final String LABEL_PATH = "labels.txt";
+    private static final int INPUT_SIZE = 224;
+    private Classifier classifier;
     private Button btnCam;
     private Button btnGallery;
     private Button btnDetect;
@@ -24,6 +30,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView imgDisplay;
     int resultCodeGallery;
     int resultCodeCam;
+    private Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -36,6 +43,7 @@ public class MainActivity extends AppCompatActivity
         imgDisplay=findViewById(R.id.picboxDisplay);
         txtAcc = findViewById(R.id.txtAcc);
         txtClass =findViewById(R.id.txtClass);
+
 
         btnGallery.setOnClickListener(new View.OnClickListener()
         {
@@ -63,6 +71,7 @@ public class MainActivity extends AppCompatActivity
             {
                 if(null!=imgDisplay.getDrawable())
                 {
+                    Bitmap img = ((BitmapDrawable)imgDisplay.getDrawable()).getBitmap();
                     activateDetection();
                 }
                 else
@@ -145,10 +154,32 @@ public class MainActivity extends AppCompatActivity
 //        }
 
     }
+    public void load_model()
+    {
+        executor.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                      classifier = TensorflowiInfrence.create(
+                            getAssets(),
+                            MODEL_PATH,
+                            LABEL_PATH,
+                            INPUT_SIZE);
+
+                } catch (final Exception e) {
+                    throw new RuntimeException("Error initializing TensorFlow!", e);
+                }
+            }
+        });
+
+    }
 
     public void activateDetection()
     {
-
+        load_model();
     }
 
 }
